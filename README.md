@@ -12,8 +12,8 @@ having the basics of linear programming (see here : [Linear programming](https:/
 
 ### Installing
 
-1 download the files
-2 launch the .exe file (coming soon)
+* 1 download the files
+* 2 launch the .exe file (coming soon)
 
 ### Code highlight
 
