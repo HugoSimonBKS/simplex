@@ -6,20 +6,20 @@
 #define FICHIER "donneesSimplex.txt"
 
 /*
-  lit les variables du probleme en forme canonique
+  initialise the matrix at 0
 */
 
 float** setupMatrice(float** mat, int m, int n){
   for(int i = 0; i < m; i++){
     for(int j = 0; j < n; j ++){
-      mat[i][j] = 0;
+      mat[i][j] = 0.0f;
     }
   }
   return mat;
 }
 
 /*
-  lit le nombre de contraintes + la ligne du probleme
+  Read the number of constraints
 */
 
 int nbLignes(){
@@ -43,7 +43,7 @@ int nbLignes(){
 }
 
 /*
-  Compte le nb de var par ligne
+  read the number of nonbasic variables
 */
 
 int nbVar(){
@@ -62,85 +62,107 @@ int nbVar(){
   return vals/nbLignes();
 }
 
-/*printf("val + %d", nbval);
-  lit les donnees du simplex et les mets dans une matrice
+/*
+  Read the data in the text file and create the corresponding standart matrix
 */
 
 float** lect_donnees(){
-  int nbval = 0;
-  int i = 0;
-  int j = 0;
-  float* c;
-  float* b;
-  float** A;
-  int m = nbLignes() - 1;
-  int n = nbVar();
-  float charactu;
-  FILE * F = NULL;
+  int i = 0;  //used to describe the actual line
+  int j = 0;  //used to describe the actual column
+  float** A;  //matrix
+  int m = nbLignes() - 1; //number of lines of the matrix
+  int n = nbVar();  //number of columuns of the matrix
+  FILE * F = NULL;  //file reader
 	F = fopen(FICHIER, "r");
   if(F != NULL)
-    {
-    A = (float**)malloc(sizeof(float*) * (m+1));
+  {
+    A = (float**)malloc(sizeof(float*) * (m+1));  //allocating space for the matrix
     for(int k = 0; k <= m; k++ ){
-      A[k] = (float*)malloc(sizeof(float)* (1+n+m+1));
+      A[k] = (float*)malloc(sizeof(float)* (n+m+2));
     }
-    //(1+n+m+1)
-    A = setupMatrice(A, m+1, (1+n+m+1)+1);
+    /*
+    the reason the number of columns is (n+m+2) is because :
+      - m columns for the identity matrix and result column,
+      - n columns for nonbasic vars,
+      - 1 column for the artificial variable
+      - 1 column where the matrix dimensions are stored (to find the dimensions easily)
+    */
+    A = setupMatrice(A, m+1, (n+m+2)); //initialise the matrix
+
 		while(fscanf(F, "%f", &A[i][j+1]) == 1)
 		{
-      nbval++;
       j++;
       if(j > n-1){
-        //contraintes
+        /*
+        result column, since each variable is attributed as soon at the fscanf reads it,
+        i must move it afterwards
+        */
         A[i][j+m] = A[i][j];
-        A[i][j] = 0;
+        A[i][j] = 0.0f;
         j = 0;
         i++;
       }
 		}
-    //matrice identite
+
+    //identity matrix
     for(int i = 0; i < m; i++){
       for(int j = 0; j < m; j++){
         if(i == j)
           A[i+1][j+n]= 1;
         else
-          A[i+1][j+n] = 0;
+          A[i+1][j+n] = 0.0f;
       }
     }
-    //on met les dimensions de la matrice dans la derniere col
-    A[0][n+m+2] = m+1;
-    A[1][n+m+2] = 1+n+m+1;
+    //attribution of the matrix dimensions
+    A[0][n+m+1] = m+1;
+    A[1][n+m+1] = (n+m+1);
 	}
   return A;
 }
 
+/*
+  function to display the matrix in the terminal
+*/
+
 void afficher_matrice(float** mat, int m, int n){
   for(int i = 0; i < m; i++){
     for(int j = 0; j < n; j++){
-      if(mat[i][j] != 0)
-        printf("[%f]",mat[i][j]);
+      if(mat[i][j]-(int)mat[i][j] <= 0.01 && mat[i][j]-(int)mat[i][j] >= -0.01)
+        printf("[%d]\t", (int)mat[i][j]);
       else
-        printf("[0]");
+        printf("[%0.2f]\t",mat[i][j]);
     }
     printf("\n");
   }
 }
 
+/*
+  function to find the entering variable during each step
+*/
+
 int trouverVE(float** matri){
-  for (int i = 0; i < (int)matri[1][nbVar()+nbLignes()+1]; i++){
+  for (int i = 0; i < (int)matri[1][nbVar()+nbLignes()]; i++){
     if(matri[0][i] != 0 && matri[0][i] > 0){
       return i;
     }
   }
   return -1;
 }
-int trouverCA(float** matri, int VE){
-  res = 0
-  for(int i = 0; i < nbLignes() -1; i++){
 
-    res = matri matri[i][VE]
+/*
+  function to find the active constraint during each step
+*/
+
+int trouverCA(float** matri, int VE){
+  int res = 0;
+  for(int i = 0; i < nbLignes() -1; i++){
+    res = matri[i][VE];
   }
 }
+
+/*
+  function that runs until the simplex algorithm is finished
+*/
 
 float** simplex(float** matri){
   while(trouverVE(matri) != -1){
@@ -152,11 +174,10 @@ float** simplex(float** matri){
 
 int main()
 {
-
-
   float** matri = NULL;
   matri = lect_donnees();
-  int m = (int)matri[0][nbVar()+nbLignes()+1];
-  int n = (int)matri[1][nbVar()+nbLignes()+1];
+  int m = (int)matri[0][nbVar()+nbLignes()];
+  int n = (int)matri[1][nbVar()+nbLignes()];
   afficher_matrice(matri, m,n);
+  //simplex(matri);
 }
