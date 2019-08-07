@@ -35,4 +35,4 @@ Every version is uploaded here on github so fell free to download older versions
 
 ## Authors
 
-***Hugo SIMON***
+***[Hugo SIMON](https://github.com/HugoSimonBKS)***
