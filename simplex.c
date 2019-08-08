@@ -4,6 +4,7 @@
 #include<string.h>
 
 #define FICHIER "donneesSimplex.txt"
+#define MAX_INT 2147483647
 
 /*
   initialise the matrix at 0
@@ -153,21 +154,56 @@ int trouverVE(float** matri){
   function to find the active constraint during each step
 */
 
-int trouverCA(float** matri, int VE){
-  int res = 0;
-  for(int i = 0; i < nbLignes() -1; i++){
-    res = matri[i][VE];
+int trouverCA(float** matri, int ve, int n){
+  int pos;
+  int res = MAX_INT;
+  for(int i = 1; i < nbLignes(); i++){
+    if(matri[i][ve] != 0){
+      if(res > matri[i][n]/matri[i][ve] && matri[i][n]/matri[i][ve] > 0){
+        res = matri[i][n]/matri[i][ve];
+        pos = i;
+      }
+    }
   }
+  return pos;
 }
+
+/*
+  Methode qui va effectuer le pivot de gauss
+*/
+
+void pivot_gauss(float** matri, int ve, int ca)
+{
+  int m = (int)matri[0][nbVar()+nbLignes()];
+  int n = (int)matri[1][nbVar()+nbLignes()];
+	int i;
+	int j;
+	float pivot = matri[ca][ve];
+	float coeff;
+
+  for(i = 0; i < m; i++){
+
+    if(i != ca){
+      coeff = (matri[i][ve]/pivot);
+
+      for(j = 0; j < n; j++){
+        matri[i][j] -= (matri[ca][j] * coeff);
+      }
+    }
+  }
+  }
 
 /*
   function that runs until the simplex algorithm is finished
 */
 
-float** simplex(float** matri){
+float** simplex(float** matri, int n){
   while(trouverVE(matri) != -1){
     int ve = trouverVE(matri);
-    int ca = trouverCA(matri, ve);
+    int ca = trouverCA(matri, ve, n);
+    printf("entering variable : %d, active constraint : %d \n", ve, ca);
+    pivot_gauss(matri,ve,ca);
+    afficher_matrice(matri, (int)matri[0][nbVar()+nbLignes()], (int)matri[1][nbVar()+nbLignes()]);
   }
   return matri;
 }
@@ -178,6 +214,6 @@ int main()
   matri = lect_donnees();
   int m = (int)matri[0][nbVar()+nbLignes()];
   int n = (int)matri[1][nbVar()+nbLignes()];
-  afficher_matrice(matri, m,n);
-  //simplex(matri);
+  afficher_matrice(matri, m, n);
+  simplex(matri, n-1);
 }
