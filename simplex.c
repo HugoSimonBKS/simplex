@@ -1,10 +1,16 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include <stdbool.h>
 #include"readlinear.h"
 #define MAX_INT 2147483647
 #define M  nbLignes()
 #define N  nbLignes() + nbVar()
+
+/*todo :  1 finish 1st phase
+          2 make a GUI
+          3 make it so it can read canonical form
+*/
 
 /*
   function to display the matrix in the terminal
@@ -127,9 +133,55 @@ float absol(float val){
     return val;
 }
 
-/*float** firstphase(float** matri){
+/*
+  function that returns an array in which each cell correspond to a constraint and if it is
+  equals to 1, it means that the constraint is negative
+*/
 
-}*/
+int* checkFirstPhase(float** matri){
+  int* i = NULL;
+  i = malloc(sizeof(int)*(M))
+  for (int j = 1; j < count; j++) {
+    if(matri[j][N-1] < 0)
+      i[j] = 1;
+    else
+      i[j] = 0;
+  }
+  return (i);
+}
+
+/*
+  function that find the values of the eventual artificial variables
+*/
+
+float** firstphase(float** matri){
+  int* ligneNeg = NULL;
+  ligneNeg = checkFirstPhase(matri);
+  int checkCursor = 1;
+
+  while (checkCursor < M && ligneNeg[checkCursor] == 0){
+    checkCursor++;
+  }
+
+  if(checkCursor == M){
+    return matri;
+  }
+
+  else{
+    float* tempObj = NULL;
+    tempObj = matri[0];
+    matri[0][0] = 1
+
+    for(int i = 1; i < N; i++){
+      matri[0][i] = 0;
+    }
+
+    for(int i = 1; i < M; i++){
+      matri[ligneNeg[i]][0] = -1.0f;
+    }
+    return matri;
+  }
+}
 
 int main()
 {
